@@ -620,7 +620,7 @@ void updateGrid(char grid[][SIZEX+1], const char maze[][SIZEX+1], Player player,
     setMaze(grid, maze); //reset the empty maze configuration into grid
     placeCheese(grid, Cheese);
     placeApples(grid, Apples);
-    placeplayer(grid, player); //set player in grid
+    placeMouse(grid, player); //set player in grid
 }
 
 //reset the empty/fixed maze configuration into grid
