@@ -84,19 +84,20 @@ int main()
     void initialiseGame(char[][SIZEX+1], char[][SIZEX+1], Player&, string&, vector<Item>&, vector<Item>&);
     void paintGame(const char [][SIZEX+1], string&, Player, double = 0);
     void endProgram();
-    void moveMouse(const char[][SIZEX + 1], Player&, int, string&, vector<Item>&, vector<Item>&);
+    void moveplayer(const char[][SIZEX + 1], Player&, int, string&, vector<Item>&, vector<Item>&);
     void updateGrid(char[][SIZEX + 1], const char[][SIZEX + 1], Player, vector<Item>&, vector<Item>&);
     int getKeyPress();
     bool isArrowKey(int);
 	void DisplayHighScores(vector<HighScorer>);
 	void updateGameStats(Player&, const vector<Item>&, vector<HighScorer>&);
 	void processCheat(Player&, string&, vector<Item>&, vector<Item>&);
+	void checkForSave(Player, string&);
 
     //local variable declarations 
     char grid[SIZEY+1][SIZEX+1];		// Grid for display
     char maze[SIZEY+1][SIZEX+1];		// Buffer Grid
 
-    Player player = { ((SIZEX / 2) + 2), ((SIZEY / 2) + 1), 500, 0, 1, 0,"Scott", false, false, PLAYER};
+    Player player = { ((SIZEX / 2) + 2), ((SIZEY / 2) + 1), 500, 0, 1, 0, "Scott", false, false, PLAYER};
 
     vector<Item> Apples;				// Vector to hold the Apples
     vector<Item> Cheese;				// Vector to hold the Cheese
@@ -115,7 +116,7 @@ int main()
     initialiseGame(grid, maze, player, GameMessage, Apples, Cheese); // Initialise grid (incl. walls & player)
 	updateGameStats(player, Apples, HighScorers); //updates stats(moves made, apples stored.)
     paintGame(grid, GameMessage, player); //display game info, modified grid & messages
-    //saveGame(grid, player, GameMessage, true); //Save the game for an initial undo.
+    saveGame(grid, player, GameMessage, true); //Save the game for an initial undo.
 
     int key(getKeyPress());	//read in  selected key: arrow or letter command
 
@@ -138,8 +139,8 @@ int main()
         
         if (isArrowKey(key))
         {
-            //saveGame(grid, player, GameMessage, true); //Save the game for undo
-            moveMouse(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
+            saveGame(grid, player, GameMessage, true); //Save the game for undo
+            moveplayer(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
             updateGrid(grid, maze, player, Apples, Cheese); //update grid information
         }
         else if (toupper(key) == BEST_SCORES)
@@ -147,20 +148,20 @@ int main()
         	DisplayHighScores(HighScorers); //Display HighScores
 			while (!getch()); //Resume Game on key press
         }
-        //else if (toupper(key) == SAVE)
-        //{
-        //	if (!player.cheated && !timedGame)//So long as the user has not cheated and it's not a timed game, Save
-        //		saveGame(grid, player, GameMessage);
-        //	else
-        //		GameMessage = "Cannot save if you've cheated or it's a timed game.";
-        //}
+        else if (toupper(key) == SAVE)
+        {
+        	if (!player.Cheated && !player.TimedGame)//So long as the user has not cheated and it's not a timed game, Save
+        		saveGame(grid, player, GameMessage);
+        	else
+        		GameMessage = "Cannot save if you've cheated or it's a timed game.";
+        }
         //else if (toupper(key) == LOAD)
         //{
         //	if (!player.cheated && !timedGame)//So long as the user has not cheated and it's not a timed game, Save
         //	{
         //		if (loadGame(grid, player, GameMessage, apples, cheese))//Ensure it loads successfully before updating the grid
         //		{
-        //			moveMouse(grid, player, key, GameMessage, apples, cheese); //move player in that direction
+        //			moveplayer(grid, player, key, GameMessage, apples, cheese); //move player in that direction
         //			updateGrid(grid, maze, player, apples, cheese); //update grid information
         //		}
         //	}
@@ -174,7 +175,7 @@ int main()
         //		if (keyLast != UNDO)
         //		{
         //			loadGame(grid, player, GameMessage, apples, cheese, true); //Recycling the load procedure for the undo
-        //			moveMouse(grid, player, key, GameMessage, apples, cheese); //move player in that direction
+        //			moveplayer(grid, player, key, GameMessage, apples, cheese); //move player in that direction
         //			updateGrid(grid, maze, player, apples, cheese); //update grid information
         //		}
         //		else
@@ -186,12 +187,12 @@ int main()
         else if (toupper(key) == CHEAT)
         {
         	processCheat(player, GameMessage, Apples, Cheese); //Call Process Cheat
-        	moveMouse(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
+        	moveplayer(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
         	updateGrid(grid, maze, player, Apples, Cheese); //update grid information
         }
 
-        //checkForSave(player, GameMessage, timedGame); //Checks for save if there is not timed game
-        //updateGameStats(player, apples, highScorers, level); //updates stats(moves made, apples stored.)
+        checkForSave(player, GameMessage); //Checks for save if there is not timed game
+        updateGameStats(player, Apples, HighScorers); //updates stats(moves made, apples stored.)
         paintGame(grid, GameMessage, player, secondsElapsed); //display game info, modified grid & messages
 
         //if (player.applesStored == (int)apples.size() && player.cheeseEaten == (int)cheese.size()) //Check if the game has been won
@@ -489,11 +490,11 @@ void initialiseGame(char grid[][SIZEX+1], char maze[][SIZEX+1], Player& player, 
 {
     //initialise grid & place player in middle
     void setInitialMazeStructure(char [][SIZEX+1], Player, string&, vector<Item>&, vector<Item>&);
-    void setInitialMouseCoordinates(Player&);
+    void setInitialplayerCoordinates(Player&);
     void updateGrid(char [][SIZEX+1], const char [][SIZEX+1], Player, vector<Item>&, vector<Item>&);
 
     setInitialMazeStructure(maze, player, GameMessage, apples, cheese); // initialise maze
-    setInitialMouseCoordinates(player);									// initialise player's position
+    setInitialplayerCoordinates(player);									// initialise player's position
     updateGrid(grid, maze, player, apples, cheese);						// prepare grid
 }
 
@@ -590,7 +591,7 @@ void setInitialMazeStructure(char maze[][SIZEX + 1], Player player, string& Game
 }
 
 //calculate player's coordinates at beginning of game
-void setInitialMouseCoordinates(Player& player)
+void setInitialplayerCoordinates(Player& player)
 {
     switch (player.Level)
     {
@@ -612,14 +613,14 @@ void updateGrid(char grid[][SIZEX+1], const char maze[][SIZEX+1], Player player,
 {
     //update grid configuration after each move
     void setMaze(char grid[][SIZEX+1], const char maze[][SIZEX+1]);
-    void placeMouse(char grid[][SIZEX+1], Player player);
+    void placeplayer(char grid[][SIZEX+1], Player player);
     void placeApples(char grid[][SIZEX + 1], vector<Item>& Apples);
     void placeCheese(char grid[][SIZEX + 1], vector<Item>& Cheese);
 
     setMaze(grid, maze); //reset the empty maze configuration into grid
     placeCheese(grid, Cheese);
     placeApples(grid, Apples);
-    placeMouse(grid, player); //set player in grid
+    placeplayer(grid, player); //set player in grid
 }
 
 //reset the empty/fixed maze configuration into grid
@@ -631,7 +632,7 @@ void setMaze(char grid[][SIZEX+1], const char maze[][SIZEX+1])
 }
 
 //place player at its new position in grid
-void placeMouse(char grid[][SIZEX+1], Player player)
+void placeplayer(char grid[][SIZEX+1], Player player)
 {
     grid[player.Y][player.X] = player.Symbol;
 }
@@ -655,7 +656,7 @@ void placeCheese(char grid[][SIZEX + 1], vector<Item>& Cheese)
 //---------------------------------------------------------------------------
 //----- move player in required direction
 //---------------------------------------------------------------------------
-void moveMouse(const char grid[][SIZEX+1], Player& player, int key, string& GameMessage, vector<Item>& Apples, vector<Item>& Cheese)
+void moveplayer(const char grid[][SIZEX+1], Player& player, int key, string& GameMessage, vector<Item>& Apples, vector<Item>& Cheese)
 {
     void setKeyDirection(int key, int& dirX, int& dirY); //calculate direction of movement required by key - if any
     int dirX(0), dirY(0);
@@ -726,8 +727,6 @@ void moveMouse(const char grid[][SIZEX+1], Player& player, int key, string& Game
 				}
 				player.X += dirX;
 				player.Y += dirY;
-				break;
-			default:
 				break;
 		}
         break;
@@ -859,7 +858,7 @@ void paintGame(const char grid[][SIZEX + 1], string& GameMessage, Player player,
     //display game title
     SelectTextColour(clYellow);
     Gotoxy(0, 0);
-    cout << "___MOUSE AND APPLES GAME___\n" << endl;
+    cout << "___player AND APPLES GAME___\n" << endl;
     SelectTextColour(clWhite);
     Gotoxy(50, 0);
     cout << "Group 1V - Scott, Josh, Damon";
@@ -948,4 +947,111 @@ void endProgram()
     cout << "Game Over!\n";
 
     system("PAUSE");
+}
+
+//---------------------------------------------------------------------------
+//----- Save Game
+//---------------------------------------------------------------------------
+bool saveGame(const char grid[][SIZEX + 1], const Player player, string& GameMessage, bool tracker = false)
+{
+	ofstream saveFileStream;
+
+	if (tracker) //Is it a save for undo?
+		saveFileStream.open(player.Name + ".track", ios::out);
+	else
+		saveFileStream.open(player.Name + ".sav", ios::out);
+
+	if (saveFileStream.fail())
+		GameMessage = "Failed to create file to save the game";
+	else
+	{
+		for (int row(1); row <= SIZEY; ++row)	//for each row (vertically)
+		{
+			saveFileStream << '\n';
+			for (int col(1); col <= SIZEX; ++col)	//for each column (horizontally)
+				saveFileStream << grid[row][col]; //output cell content
+		}
+
+		saveFileStream << '\n';
+		saveFileStream << player.X << '\n';
+		saveFileStream << player.Y << '\n';
+		saveFileStream << player.Score << '\n';
+
+		if (!tracker)
+			GameMessage = "Successfully saved the game.";
+
+		saveFileStream.close();
+
+		return true;
+	}
+
+	return false;
+}
+
+//---------------------------------------------------------------------------
+//----- Load Game -
+//---------------------------------------------------------------------------
+bool loadGame(char grid[][SIZEX + 1], Player& player, string& GameMessage, vector<Item>& Apples, vector<Item>& Cheese, bool undo = false)
+{
+	ifstream loadFileStream;
+	if (undo)// Is it a load for undo?
+		loadFileStream.open(player.Name + ".track", ios::in);
+	else
+		loadFileStream.open(player.Name + ".sav", ios::in);
+
+	if (loadFileStream.fail())
+		GameMessage = "Failed to open " + player.Name + ".txt";
+	else
+	{
+		int row(1), appleCount(0), cheeseCount(0);
+		char item;
+		string sitem;
+		Clrscr();
+		Apples.clear();
+		Cheese.clear();
+		//While there are rows to insert into the maze grid. initialize each apple they find and build maze[][]
+		while (row < SIZEY + 1)
+		{
+			for (int i = 0; i < SIZEX + 1; i++)
+			if (loadFileStream.good())
+			{
+				item = loadFileStream.get();
+				if (item == APPLE)
+				{
+					Apples.push_back(Item { i, row, false, APPLE});
+					grid[row][i] = TUNNEL;
+					appleCount++;
+				}
+				else if (item == CHEESE)
+				{
+					Cheese.push_back(Item{ i, row, false, CHEESE});
+					grid[row][i] = TUNNEL;
+					cheeseCount++;
+				}
+				else
+					grid[row][i] = item;
+			}
+			row++;
+		}
+		item = loadFileStream.get(); // new line
+		getline(loadFileStream, sitem); // get x
+		istringstream(sitem) >> player.X;
+
+		getline(loadFileStream, sitem); // get y
+		istringstream(sitem) >> player.Y;
+
+		getline(loadFileStream, sitem); // get moves
+		istringstream(sitem) >> player.Score;
+
+		if (!undo)
+			GameMessage = "Successfully loaded the game";
+		else
+			GameMessage = "Last move has been undone";
+
+		loadFileStream.close();
+
+		return true;
+	}
+
+	return false;
 }
