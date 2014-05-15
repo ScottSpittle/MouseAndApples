@@ -92,6 +92,8 @@ int main()
 	void updateGameStats(Player&, const vector<Item>&, vector<HighScorer>&);
 	void processCheat(Player&, string&, vector<Item>&, vector<Item>&);
 	void checkForSave(Player, string&);
+	bool saveGame(const char[][SIZEX+1], const Player, string&, bool = false);
+	bool loadGame(char[][SIZEX + 1], Player&, string&, vector<Item>&, vector<Item>&, bool = false);
 
     //local variable declarations 
     char grid[SIZEY+1][SIZEX+1];		// Grid for display
@@ -125,17 +127,17 @@ int main()
 
     while (key != QUIT) //while user does not want to quit
     {
-        //if (player.TimedGame)
-        //{
-        //	time(&timer);  /* get current time; same as: timer = time(NULL)  */
-        //	secondsElapsed = difftime(timer, mktime(&gameStartTime));
+        if (player.TimedGame)
+        {
+        	time(&timer);  /* get current time; same as: timer = time(NULL)  */
+        	secondsElapsed = difftime(timer, mktime(&gameStartTime));
 
-        //	if (secondsElapsed >= TIMER_MAX)
-        //	{
-        //		GameMessage = "Game Over! Timer Expired";
-        //		endProgram();
-        //	}
-        //}
+        	if (secondsElapsed >= TIMER_MAX)
+        	{
+        		GameMessage = "Game Over! Timer Expired";
+        		endProgram();
+        	}
+        }
         
         if (isArrowKey(key))
         {
@@ -143,11 +145,11 @@ int main()
             moveMouse(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
             updateGrid(grid, maze, player, Apples, Cheese); //update grid information
         }
-        else if (toupper(key) == BEST_SCORES)
-        {
-        	DisplayHighScores(HighScorers); //Display HighScores
-			while (!getch()); //Resume Game on key press
-        }
+		else if (toupper(key) == BEST_SCORES)
+		{
+			DisplayHighScores(HighScorers); //Display HighScores
+			getch();
+		}
         else if (toupper(key) == SAVE)
         {
         	if (!player.Cheated && !player.TimedGame)//So long as the user has not cheated and it's not a timed game, Save
@@ -155,35 +157,35 @@ int main()
         	else
         		GameMessage = "Cannot save if you've cheated or it's a timed game.";
         }
-        //else if (toupper(key) == LOAD)
-        //{
-        //	if (!player.cheated && !timedGame)//So long as the user has not cheated and it's not a timed game, Save
-        //	{
-        //		if (loadGame(grid, player, GameMessage, apples, cheese))//Ensure it loads successfully before updating the grid
-        //		{
-        //			moveplayer(grid, player, key, GameMessage, apples, cheese); //move player in that direction
-        //			updateGrid(grid, maze, player, apples, cheese); //update grid information
-        //		}
-        //	}
-        //	else
-        //		GameMessage = "Cannot load if you've cheated or it's a timed game.";
-        //}
-        //else if (toupper(key) == UNDO)
-        //{
-        //	if (!player.cheated && !timedGame)//Undo the last move if allowed.
-        //	{
-        //		if (keyLast != UNDO)
-        //		{
-        //			loadGame(grid, player, GameMessage, apples, cheese, true); //Recycling the load procedure for the undo
-        //			moveplayer(grid, player, key, GameMessage, apples, cheese); //move player in that direction
-        //			updateGrid(grid, maze, player, apples, cheese); //update grid information
-        //		}
-        //		else
-        //			GameMessage = "No!!";
-        //	}
-        //	else
-        //		GameMessage = "You cheated, you can't undo.";
-        //}
+        else if (toupper(key) == LOAD)
+        {
+        	if (!player.Cheated && !player.TimedGame)//So long as the user has not cheated and it's not a timed game, Save
+        	{
+        		if (loadGame(grid, player, GameMessage, Apples, Cheese))//Ensure it loads successfully before updating the grid
+        		{
+					moveMouse(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
+					updateGrid(grid, maze, player, Apples, Cheese); //update grid information
+        		}
+        	}
+        	else
+        		GameMessage = "Cannot load if you've cheated or it's a timed game.";
+        }
+        else if (toupper(key) == UNDO)
+        {
+        	if (!player.Cheated && !player.TimedGame)//Undo the last move if allowed.
+        	{
+        		if (player.LastKey != UNDO)
+        		{
+        			loadGame(grid, player, GameMessage, Apples, Cheese, true); //Recycling the load procedure for the undo
+					moveMouse(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
+					updateGrid(grid, maze, player, Apples, Cheese); //update grid information
+        		}
+        		else
+        			GameMessage = "No!!";
+        	}
+        	else
+        		GameMessage = "You cheated, you can't undo.";
+        }
         else if (toupper(key) == CHEAT)
         {
         	processCheat(player, GameMessage, Apples, Cheese); //Call Process Cheat
