@@ -84,7 +84,7 @@ int main()
     void initialiseGame(char[][SIZEX+1], char[][SIZEX+1], Player&, string&, vector<Item>&, vector<Item>&);
     void paintGame(const char [][SIZEX+1], string&, Player, double = 0);
     void endProgram();
-    void moveplayer(const char[][SIZEX + 1], Player&, int, string&, vector<Item>&, vector<Item>&);
+    void moveMouse(const char[][SIZEX + 1], Player&, int, string&, vector<Item>&, vector<Item>&);
     void updateGrid(char[][SIZEX + 1], const char[][SIZEX + 1], Player, vector<Item>&, vector<Item>&);
     int getKeyPress();
     bool isArrowKey(int);
@@ -140,7 +140,7 @@ int main()
         if (isArrowKey(key))
         {
             saveGame(grid, player, GameMessage, true); //Save the game for undo
-            moveplayer(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
+            moveMouse(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
             updateGrid(grid, maze, player, Apples, Cheese); //update grid information
         }
         else if (toupper(key) == BEST_SCORES)
@@ -187,7 +187,7 @@ int main()
         else if (toupper(key) == CHEAT)
         {
         	processCheat(player, GameMessage, Apples, Cheese); //Call Process Cheat
-        	moveplayer(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
+			moveMouse(grid, player, key, GameMessage, Apples, Cheese); //move player in that direction
         	updateGrid(grid, maze, player, Apples, Cheese); //update grid information
         }
 
@@ -613,7 +613,7 @@ void updateGrid(char grid[][SIZEX+1], const char maze[][SIZEX+1], Player player,
 {
     //update grid configuration after each move
     void setMaze(char grid[][SIZEX+1], const char maze[][SIZEX+1]);
-    void placeplayer(char grid[][SIZEX+1], Player player);
+    void placeMouse(char grid[][SIZEX+1], Player player);
     void placeApples(char grid[][SIZEX + 1], vector<Item>& Apples);
     void placeCheese(char grid[][SIZEX + 1], vector<Item>& Cheese);
 
@@ -632,7 +632,7 @@ void setMaze(char grid[][SIZEX+1], const char maze[][SIZEX+1])
 }
 
 //place player at its new position in grid
-void placeplayer(char grid[][SIZEX+1], Player player)
+void placeMouse(char grid[][SIZEX+1], Player player)
 {
     grid[player.Y][player.X] = player.Symbol;
 }
@@ -656,7 +656,7 @@ void placeCheese(char grid[][SIZEX + 1], vector<Item>& Cheese)
 //---------------------------------------------------------------------------
 //----- move player in required direction
 //---------------------------------------------------------------------------
-void moveplayer(const char grid[][SIZEX+1], Player& player, int key, string& GameMessage, vector<Item>& Apples, vector<Item>& Cheese)
+void moveMouse(const char grid[][SIZEX+1], Player& player, int key, string& GameMessage, vector<Item>& Apples, vector<Item>& Cheese)
 {
     void setKeyDirection(int key, int& dirX, int& dirY); //calculate direction of movement required by key - if any
     int dirX(0), dirY(0);
@@ -858,7 +858,7 @@ void paintGame(const char grid[][SIZEX + 1], string& GameMessage, Player player,
     //display game title
     SelectTextColour(clYellow);
     Gotoxy(0, 0);
-    cout << "___player AND APPLES GAME___\n" << endl;
+    cout << "___Mouse AND APPLES GAME___\n" << endl;
     SelectTextColour(clWhite);
     Gotoxy(50, 0);
     cout << "Group 1V - Scott, Josh, Damon";
